@@ -1,124 +1,103 @@
+import React, { Component } from "react";
+import { View, Text, StyleSheet, Image, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import Ionicons from '@expo/vector-icons/Ionicons';
 
-import { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Image, TextInput, TouchableOpacity, SafeAreaView } from 'react-native';
-import { connect, sendMessage } from './mqtt2';
+// Páginas export default
+import Eletrica from "./src/pages/eletrica";
+import Hidraulica from "./src/pages/hidraulica";
+import Resumo from "./src/pages/resumo";
+import Incendio from "./src/pages/incendio";
+import Hvac from "./src/pages/hvac";
+import Utilidades from "./src/pages/utilidades";
 
-export default function App() {
-  const [ message, setMessage] = useState();
-  const [ topic, setTopic] = useState('teste');
+const Tab = createMaterialTopTabNavigator();
 
-  useEffect(()=>{
-    connect();
-  }, [])
+export default class App extends Component {
+  render() {
+    const topoHeight = 80;
+    const statusBarOffset = Platform.OS === "ios" ? 40 : 20;
 
-  const handleSend=()=>{
-    sendMessage(topic, message);  
-  }
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.topo}> 
-        <Text style={styles.titulo}>ALERTAS DE SISTEMA</Text>
-        <Image source={require('./assets/logo.png')} style={styles.logo} />        
-      </View>
-      <View style={styles.body}>
-        <Text style={styles.subtitulo}>ALARMES</Text>
-        <TextInput style={styles.input}
-          placeholder='topic'
-          value={topic}
-          onChangeText={setTopic}
-        />
-
-        <TextInput style={styles.input}
-          placeholder='message'
-          value={message}
-          onChangeText={setMessage}
-        />
-        <TouchableOpacity style={styles.botao} onPress={handleSend}>
-          <Text style={styles.botaoTexto}>
-            Enviar
-          </Text>
-        </TouchableOpacity >
-        <StatusBar style="auto" />
-      </View>
-
-      <View>
-        <Text style={styles.lista}>Lista de alarmes</Text>
-        <View>
+    return (
+      <View style={styles.container}>
+        {/* TOPO FIXO FLUTUANTE */}
+        <View style={[styles.topo, { top: statusBarOffset }]}>
+          <Text style={styles.topoTitulo}>CETEM TECNOLOGIA</Text>
+          <Image source={require("./assets/logo.png")} style={styles.logo} />
         </View>
+
+        {/* NAVEGAÇÃO ABAIXO DO TOPO */}
+        <NavigationContainer>
+          <SafeAreaView style={[styles.conteudo, { marginTop: topoHeight + statusBarOffset }]} edges={['top', 'left', 'right']}>
+            <Tab.Navigator
+              screenOptions={({ route }) => ({
+                tabBarShowIcon: true,
+                tabBarScrollEnabled: true,
+                tabBarIndicatorStyle: { height: 3, backgroundColor: "tomato" },
+                tabBarStyle: { backgroundColor: "#111" },
+                tabBarActiveTintColor: "tomato",
+                tabBarInactiveTintColor: "#aaa",
+                tabBarLabelStyle: { fontWeight: "600", fontSize: 12 },
+                tabBarItemStyle: { width: 90 }, // abas mais estreitas
+                tabBarIcon: ({ color }) => {
+                  let name = "ellipse";
+                  if (route.name === "Resumo") name = "document-text";
+                  if (route.name === "Incêndio") name = "flame";
+                  if (route.name === "Elétrica") name = "flash";
+                  if (route.name === "Hidráulica") name = "water";
+                  if (route.name === "HVAC") name = "snow";
+                  if (route.name === "Utilidades") name = "construct";
+                  return <Ionicons name={name} size={18} color={color} />;
+                },
+              })}
+            >
+              <Tab.Screen name="Resumo" component={Resumo} />
+              <Tab.Screen name="Incêndio" component={Incendio} />
+              <Tab.Screen name="Elétrica" component={Eletrica} />
+              <Tab.Screen name="Hidráulica" component={Hidraulica} />
+              <Tab.Screen name="HVAC" component={Hvac} />
+              <Tab.Screen name="Utilidades" component={Utilidades} />
+            </Tab.Navigator>
+          </SafeAreaView>
+        </NavigationContainer>
       </View>
-      
-    </SafeAreaView>
-  );
+    );
+  }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  logo: {
-    width: 120,  
-    resizeMode: 'contain', // ajusta a imagem sem cortar
-    //marginBottom: 20,      // espaço abaixo da imagem
+  container: { 
+    flex: 1, 
+    backgroundColor: "#fff",
   },
   topo: {
-    width: '100%',
+    position: "absolute", // flutua acima de tudo
+    left: 16,
+    right: 16,
     height: 80,
-    backgroundColor: '#c7c7c7ff',
-    marginTop: 0,
-    flexDirection: "row", 
-    justifyContent: "space-around", // alinha no eixo principal
-    alignItems: "center",     // alinha no eixo cruzado
-    marginTop: 40,
-    
-  },
-  body:{
-    width: '90%',
-    flexDirection: "column",  // alinha no eixo principal
-    alignItems: "center",     // alinha no eixo cruzado
-    marginTop: 20,
-  },
-
-  titulo: {
-    color: '#353535ff',
-    fontSize: 20,
-    fontWeight: 500,
-  },
-  subtitulo: {
-    color: '#353535ff',
-    fontSize: 20,
-    marginTop: 20,
-    fontWeight: 500,
-    
-  },
-  input:{
-    backgroundColor: '#eee',
-    width: '100%',
-    margin: 10,
-    fontSize: 18,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-    borderRadius: 5
-  },
-  botao:{
-    width: '100%',
-    backgroundColor: '#5b86ffff',
-    fontWeight: 500,
-    alignItems: 'center',
-    padding: 10,
-    borderRadius: 5,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
     marginTop: 10,
-  },
-  botaoTexto:{
-    fontSize: 20
-  },
-  lista:{
-    fontSize: 20,
-    marginTop: 20
-  }
+    // sombra cross-platform
+    elevation: 5, // Android
+    
 
+  },
+  logo: {
+    width: 100,
+    height: 50,
+    resizeMode: "contain",
+  },
+  topoTitulo: {
+    color: "#000",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  conteudo: {
+    flex: 1,
+  },
 });
