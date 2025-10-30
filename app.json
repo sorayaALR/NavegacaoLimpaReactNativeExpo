@@ -3,6 +3,9 @@
     "name": "aplicacao",
     "slug": "aplicacao",
     "version": "1.0.0",
+    "extra": {
+      "mqttUser": "cetem",
+      "mqttPass": "Cetem@25"},
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
